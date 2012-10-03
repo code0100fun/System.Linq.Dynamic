@@ -40,8 +40,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DynamicLinq.cs" />
+    <Compile Include="ClassFactory.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="DynamicExpression.cs" />
+    <Compile Include="DynamicClass.cs" />
+    <Compile Include="DynamicOrdering.cs" />
+    <Compile Include="DynamicProperty.cs" />
+    <Compile Include="DynamicQueryable.cs" />
+    <Compile Include="ExpressionParser.cs" />
+    <Compile Include="ParseException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Signature.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
