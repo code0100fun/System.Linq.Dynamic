@@ -26,6 +26,27 @@ namespace System.Linq.Dynamic
                     source.Expression, Expression.Quote(lambda)));
         }
 
+        public static dynamic Select<TResult>(this TResult source, string selector)
+        {
+            if (source == null) throw new ArgumentNullException("source");
+            if (selector == null) throw new ArgumentNullException("selector");
+            LambdaExpression lambda = DynamicExpression.ParseLambda(source.GetType(), null, selector);
+            return lambda.Compile().DynamicInvoke(source);
+        }
+
+        public static IEnumerable<TResult> Select<TResult>(this IEnumerable<TResult> source, string selector, params object[] values)
+        {
+            if (source == null) throw new ArgumentNullException("source");
+            if (selector == null) throw new ArgumentNullException("selector");
+            var sourceQ = source.AsQueryable();
+            LambdaExpression lambda = DynamicExpression.ParseLambda(sourceQ.ElementType, null, selector, values);
+            return sourceQ.Provider.CreateQuery<TResult>(
+                Expression.Call(
+                    typeof(Queryable), "Select",
+                    new Type[] { sourceQ.ElementType, lambda.Body.Type },
+                    sourceQ.Expression, Expression.Quote(lambda)));
+        }
+
         public static IQueryable Select(this IQueryable source, string selector, params object[] values)
         {
             if (source == null) throw new ArgumentNullException("source");
@@ -38,15 +59,15 @@ namespace System.Linq.Dynamic
                     source.Expression, Expression.Quote(lambda)));
         }
 
-        public static IQueryable<TResult> Select<TResult>(this IQueryable source, string selector, params object[] values)
+        public static IQueryable<dynamic> Select<TResult>(this IQueryable<TResult> source, string selector, params object[] values)
         {
             if (source == null) throw new ArgumentNullException("source");
             if (selector == null) throw new ArgumentNullException("selector");
-            LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, typeof(TResult), selector, values);
-            return source.Provider.CreateQuery<TResult>(
+            LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, null, selector, values);
+            return source.Provider.CreateQuery<dynamic>(
                 Expression.Call(
                     typeof(Queryable), "Select",
-                    new Type[] { source.ElementType, typeof(TResult) },
+                    new Type[] { source.ElementType, lambda.Body.Type },
                     source.Expression, Expression.Quote(lambda)));
         }
 
