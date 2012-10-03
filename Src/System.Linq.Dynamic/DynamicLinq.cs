@@ -42,6 +42,18 @@ namespace System.Linq.Dynamic
                     source.Expression, Expression.Quote(lambda)));
         }
 
+        public static IQueryable<TResult> Select<TResult>(this IQueryable source, string selector, params object[] values)
+        {
+            if (source == null) throw new ArgumentNullException("source");
+            if (selector == null) throw new ArgumentNullException("selector");
+            LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, typeof(TResult), selector, values);
+            return source.Provider.CreateQuery<TResult>(
+                Expression.Call(
+                    typeof(Queryable), "Select",
+                    new Type[] { source.ElementType, typeof(TResult) },
+                    source.Expression, Expression.Quote(lambda)));
+        }
+
         public static IQueryable<T> OrderBy<T>(this IQueryable<T> source, string ordering, params object[] values)
         {
             return (IQueryable<T>)OrderBy((IQueryable)source, ordering, values);
@@ -563,6 +575,7 @@ namespace System.Linq.Dynamic
 
         interface IEnumerableSignatures
         {
+            void Select(object selector);
             void Where(bool predicate);
             void Any();
             void Any(bool predicate);
@@ -1330,13 +1343,22 @@ namespace System.Linq.Dynamic
             {
                 typeArgs = new Type[] { elementType, args[0].Type };
             }
+            else if(signature.Name == "Select")
+            {
+                typeArgs = new Type[] { elementType, Expression.Lambda(args[0], innerIt).Body.Type };
+            }
             else
             {
                 typeArgs = new Type[] { elementType };
             }
+
             if (args.Length == 0)
             {
                 args = new Expression[] { instance };
+            }
+            else if(signature.Name == "Select")
+            {
+                args = new Expression[] { instance, Expression.Lambda(args[0], innerIt) };
             }
             else
             {
